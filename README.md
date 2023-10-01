@@ -14,5 +14,5 @@ The project is still a work in progress. Some adjustments that need to be made i
 * Creating a UI.
 
 I took inspiration and adapted code from [this ActiveState article](https://www.activestate.com/blog/how-to-build-a-lyrics-generator-with-python-recurrent-neural-networks/)
-and [this Machine Leanring Mastery article](https://machinelearningmastery.com/how-to-develop-a-word-level-neural-language-model-in-keras/).
+and [this Machine Learning Mastery article](https://machinelearningmastery.com/how-to-develop-a-word-level-neural-language-model-in-keras/).
 
