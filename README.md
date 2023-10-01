@@ -12,6 +12,7 @@ The project is still a work in progress. Some adjustments that need to be made i
 * Improving the data cleaning process to filter out erroneous tokens.
 * Optimizing the architecture of the LSTM.
 * Creating a UI.
+* Cleaning up code (e.g. adding docstrings, solidifying or removing lyrics_generator class, etc).
 
 I took inspiration and adapted code from [this ActiveState article](https://www.activestate.com/blog/how-to-build-a-lyrics-generator-with-python-recurrent-neural-networks/)
 and [this Machine Learning Mastery article](https://machinelearningmastery.com/how-to-develop-a-word-level-neural-language-model-in-keras/).
