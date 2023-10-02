@@ -10,10 +10,6 @@ from helpers import *
 from tensorflow.keras.callbacks import LambdaCallback, ModelCheckpoint, EarlyStopping
 from tensorflow.keras.layers import Dense, Dropout, Activation, LSTM, Bidirectional, Embedding
 
-# Adapted from https://www.activestate.com/blog/how-to-build-a-lyrics-generator-with-python-recurrent-neural-networks/
-# https://machinelearningmastery.com/how-to-develop-a-word-level-neural-language-model-in-keras/
-
-
 class lyrics_generator:
     def __init__(self, min_freq=7, min_seq=5, batch_size=32):
       self.min_freq = min_freq
