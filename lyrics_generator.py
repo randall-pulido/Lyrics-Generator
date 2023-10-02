@@ -10,6 +10,7 @@ from helpers import *
 from tensorflow.keras.callbacks import LambdaCallback, ModelCheckpoint, EarlyStopping
 from tensorflow.keras.layers import Dense, Dropout, Activation, LSTM, Bidirectional, Embedding
 
+
 class lyrics_generator:
     def __init__(self, min_freq=7, min_seq=5, batch_size=32):
       self.min_freq = min_freq
@@ -25,8 +26,8 @@ class lyrics_generator:
 
 # Process data into dataframe.
 path1 = '/Users/randallpulido/Desktop/ML/lyrics_generator/artist_data/top_10000_artists/10000-MTV-Music-Artists-page-1.csv'
-artist_genre_df = get_artists_by_genre(path1, num_artists=100)
-lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), max_songs=2)
+artist_genre_df = get_artists_by_genre(path1, num_artists=250)
+lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), max_songs=4)
 merged = lyrics_df.merge(artist_genre_df, on='artist', how='left')
 
 # Tokenize lyric data.
