@@ -6,16 +6,14 @@ and explore the full breadth of their creativity for many decades. ML can certai
 be utilized for these aims as well, and that was the main goal that I had in mind when 
 I decided to start this project. Not only could I have fun reading computer 
 generated lyrics, but maybe I could incorporate them into a unique song and write 
-guitar chords to accompany them. A lesser and far less wholesome goal that I hope to
-come out of this project is to annoy my roommate and longtime friend, who despises 
-coutry music, especially country love songs. I'd like to automate the lyrics generation process 
-such that every morning, when he wakes up, the first thing that he sees when he 
-checks his phone is a paragraph of country love song lyrics that he can (likely not) enjoy
-straight from my model.
+guitar chords to accompany them. 
 
-I took inspiration (and adapted code) from here:
-https://www.activestate.com/blog/how-to-build-a-lyrics-generator-with-python-recurrent-neural-networks/
+The project is still a work in progress. Some adjustments that need to be made include:
+* Improving the data cleaning process to filter out erroneous tokens.
+* Optimizing the architecture of the LSTM.
+* Creating a UI.
+* Cleaning up code (e.g. adding docstrings, solidifying or removing lyrics_generator class, etc).
 
-and here:
-https://machinelearningmastery.com/how-to-develop-a-word-level-neural-language-model-in-keras/
+I took inspiration and adapted code from [this ActiveState article](https://www.activestate.com/blog/how-to-build-a-lyrics-generator-with-python-recurrent-neural-networks/)
+and [this Machine Learning Mastery article](https://machinelearningmastery.com/how-to-develop-a-word-level-neural-language-model-in-keras/).
 
