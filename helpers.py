@@ -5,8 +5,6 @@ import lyricsgenius
 import string
 
 GENIUS_ACCESS_TOKEN = 'Kt4TThKkWKXuV43ItLTV_po3fUB9WDIsz5pvWc-HMI-nATTGgLvL1i7ZXF1KD705'
-# Client ID: 5G41Lqrxamp4LE2pe828I7q1q7stIJ6r7vtk08IPCS8DFtKjUmIiOn7J7r48x93-
-# Client Secret: CZN5XXNanCealj4fJVoNRIz0Kbwo9FAcgG_EICQGxMBflGsbTqKVesUfzymiDd-gl7GjBkjTBB_W3R-mNHqB-g
 
 def get_artists_by_genre(filepath, genres=['country'], 
                          artist_col_name='name', genre_col_name='genre', num_artists=20):
@@ -94,13 +92,20 @@ def clean_lyrics(lyrics_text):
     Returns:
         A string of the cleaned song lyrics.
 
-    TODO: Remove advertising text within lyrics. Ellipses?
+    TODO: Improve the removal of advertising text within lyrics.
 
     '''
-    lyrics_text = lyrics_text.split('\n\n',1)[1]
+    try:
+        lyrics_text = lyrics_text.split('\n\n',1)[1]
+    except IndexError:
+        lyrics_text = lyrics_text.split('\n',1)[1]
+    lyrics_text = re.sub('you might also like', ' ', lyrics_text)
+    lyrics_text = re.sub('see.*?live', '', lyrics_text)
+    lyrics_text = re.sub('get tickets as low as \$?\d+\b?', ' ', lyrics_text)
     lyrics_text = re.sub('[\(\[].*?[\)\]]', '', lyrics_text)
     lyrics_text = re.sub('\n\n\n|\n\n', '\n', lyrics_text)
     lyrics_text = re.sub('\n', ' \n ', lyrics_text)
+    lyrics_text = lyrics_text.replace('  ', ' ')
     if lyrics_text.endswith('Embed'):
         lyrics_text = lyrics_text[:-5]
     lyrics_text = re.sub('\.|\,|\!|\?|\-|', '', lyrics_text)
