@@ -48,7 +48,7 @@ def get_lyrics(artists, max_songs=5):
 
     This function takes in a list of strings of artist names and finds (up to 
     `max_songs`) songs performed by that artist using the lyricsgenius API:
-    https://github.com/johnwmillr/LyricsGenius
+    https://github.com/johnwmillr/LyricsGenius.
 
     Args:
         artists: A list of artist names.
@@ -112,19 +112,54 @@ def clean_lyrics(lyrics_text):
     return lyrics_text.lower()
 
 def split_lyric_data(lyric_data):
+    '''Splits text data into tokens by spaces. Preserves newline characters.
+
+    Args:
+        lyric_data: String we wish to split by spaces.
+    
+    Returns:
+        A list of tokens retreived from the input text.
+    
+    '''
     split_data = []
     for song_lyrics in lyric_data:
         split_data += [token for token in song_lyrics.split(' ') 
                        if token.strip != '' or token == '\n']
     return split_data
 
-def get_token_frequencies(lyrics):
+def get_frequencies(lst):
+    '''Get the frequencies of items within a list.
+
+    Args:
+        lst: A list of items.
+    
+    Returns:
+        A dictionary with (list item, item frequency) as (key, value).
+    
+    '''
     frequencies = {}
-    for token in lyrics:
+    for token in lst:
         frequencies[token] = frequencies.get(token, 0) + 1
     return frequencies
 
 def sequence_tokens(split_data, uncommon_tokens, seq_length=5):
+    '''Partitions a list into sublists that do not contains any of `uncommon_tokens` 
+    with length `seq_length`. The first `seq_length` - 1 elements of the sublists
+    are saved to the first resultant list of the returned tuple and the last element of 
+    the sublists are saved to the second resultant list of the returned tuple.
+
+    Args:
+        split_data: List to be partitioned.
+        uncommon_tokens: Set with which to filter `split_data`.
+        seq_length: The length of the sequences to partition.
+
+    Returns:
+        A 2-tuple. The first element of the tuple is a list of sequences that 
+        were partitioned from the given list, excluding the last element of each 
+        sequence. The second element of the tuple is a list of the last elements 
+        of each sequence.
+    
+    '''
     valid_seqs = []
     end_seq_words = []
     for i in range(len(split_data) - seq_length ):
