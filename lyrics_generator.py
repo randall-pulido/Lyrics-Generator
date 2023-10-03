@@ -12,8 +12,8 @@ from tensorflow.keras.layers import Dense, Dropout, Activation, LSTM, Bidirectio
 
 # Process data into dataframe.
 path1 = '/Users/randallpulido/Desktop/ML/lyrics_generator/artist_data/top_10000_artists/10000-MTV-Music-Artists-page-1.csv'
-artist_genre_df = get_artists_by_genre(path1, num_artists=250)
-lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), max_songs=4)
+artist_genre_df = get_artists_by_genre(path1, num_artists=2)
+lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), max_songs=1)
 merged = lyrics_df.merge(artist_genre_df, on='artist', how='left')
 
 # Tokenize lyric data.
@@ -23,6 +23,7 @@ print('Total tokens: ', len(tokenized_lyrics))
 # Get token frequencies.
 frequencies = get_frequencies(tokenized_lyrics)
 
+# Get set of words and uncommon words.
 MIN_FREQUENCY = 7
 uncommon_words = set([key for key in frequencies.keys() if frequencies[key] < MIN_FREQUENCY])
 words = sorted(set([key for key in frequencies.keys() if frequencies[key] >= MIN_FREQUENCY]))
@@ -32,25 +33,34 @@ indices_word = dict((i, w) for i, w in enumerate(words))
 print('Words with less than {} appearances: {}'.format( MIN_FREQUENCY, len(uncommon_words)))
 print('Words with more than {} appearances: {}'.format( MIN_FREQUENCY, len(words)))
 
+# Partition data into sequences of tokens and end tokens.
 MIN_SEQ = 5
 sequences = sequence_tokens(tokenized_lyrics, uncommon_words, seq_length=MIN_SEQ)
 valid_seqs, end_tokens = sequences
 print('Valid sequences of size {}: {}'.format(MIN_SEQ, len(valid_seqs)))
+
+# Split data into train and test.
 X_train, X_test, y_train, y_test = train_test_split(sequences[0], end_tokens, test_size=0.02, random_state=42)
 
 def generator(sentence_list, next_word_list, batch_size):
-   '''Data generator for fit and evaluate.
-   '''
-   index = 0
-   while True:
-       x = np.zeros((batch_size, MIN_SEQ), dtype=np.int32)
-       y = np.zeros((batch_size), dtype=np.int32)
-       for i in range(batch_size):
-           for t, w in enumerate(sentence_list[index % len(sentence_list)]):
-               x[i, t] = word_indices[w]
-           y[i] = word_indices[next_word_list[index % len(sentence_list)]]
-           index = index + 1
-       yield x, y
+    '''Data generator.
+    
+    Yields `batch_size` number of sequences from `sentence_list` and `next_word_list`
+    stored as the word's corresponding index from `word_indices` set.
+
+    '''
+    index = 0
+    while True:
+        x = np.zeros((batch_size, MIN_SEQ), dtype=np.int32)
+        y = np.zeros((batch_size), dtype=np.int32)
+        for i in range(batch_size):
+            for t, w in enumerate(sentence_list[index % len(sentence_list)]):
+                x[i, t] = word_indices[w]
+            y[i] = word_indices[next_word_list[index % len(sentence_list)]]
+            index = index + 1
+        yield x, y
+
+
 # Functions from keras-team/keras/blob/master/examples/lstm_text_generation.py
 def sample(preds, temperature=1.0):
    # helper function to sample an index from a probability array
