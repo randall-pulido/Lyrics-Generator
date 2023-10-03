@@ -10,20 +10,6 @@ from helpers import *
 from tensorflow.keras.callbacks import LambdaCallback, ModelCheckpoint, EarlyStopping
 from tensorflow.keras.layers import Dense, Dropout, Activation, LSTM, Bidirectional, Embedding
 
-
-class lyrics_generator:
-    def __init__(self, min_freq=7, min_seq=5, batch_size=32):
-      self.min_freq = min_freq
-      self.min_seq = min_seq
-      self.batch_size = batch_size
-    
-    # def train_test_split(tokenized_data):
-    #     split_lyric_data = []
-    #     for 
-    #     text_as_list += [w for w in text.split(' ') if w.strip() != '' or w == '\n']
-
-
-
 # Process data into dataframe.
 path1 = '/Users/randallpulido/Desktop/ML/lyrics_generator/artist_data/top_10000_artists/10000-MTV-Music-Artists-page-1.csv'
 artist_genre_df = get_artists_by_genre(path1, num_artists=250)
@@ -34,8 +20,8 @@ merged = lyrics_df.merge(artist_genre_df, on='artist', how='left')
 tokenized_lyrics = split_lyric_data(merged['lyrics'])
 print('Total tokens: ', len(tokenized_lyrics))
 
-# Token frequencies
-frequencies = get_token_frequencies(tokenized_lyrics)
+# Get token frequencies.
+frequencies = get_frequencies(tokenized_lyrics)
 
 MIN_FREQUENCY = 7
 uncommon_words = set([key for key in frequencies.keys() if frequencies[key] < MIN_FREQUENCY])
@@ -51,13 +37,9 @@ sequences = sequence_tokens(tokenized_lyrics, uncommon_words, seq_length=MIN_SEQ
 valid_seqs, end_tokens = sequences
 print('Valid sequences of size {}: {}'.format(MIN_SEQ, len(valid_seqs)))
 X_train, X_test, y_train, y_test = train_test_split(sequences[0], end_tokens, test_size=0.02, random_state=42)
-print(X_train[2:5])
 
 def generator(sentence_list, next_word_list, batch_size):
    '''Data generator for fit and evaluate.
-
-
-   
    '''
    index = 0
    while True:
