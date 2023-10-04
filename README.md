@@ -22,14 +22,40 @@ I took inspiration and adapted code from [this ActiveState article](https://www.
 
 ### Model
 
+The LSTM network utilized in this project is designed using layers built from TensorFlow's Keras package.
+
 ### Improvements
 
 The project is still a work in progress. Some adjustments that need to be made include:
 * Improving the data cleaning process to filter out erroneous data.
     * Described in the [Data Retrieval](#data-retrieval) section above.
 * Optimizing the architecture of the LSTM.
-* Creating a UI.
+* Look into ways of making the generated song lyrics have a rhyme scheme.
+* Make README file more in-depth.
+* Creating a UI and API.
 
 ------------------
 
 ## Results
+
+Example outputs trained on 1000 country songs by 250 different artists:
+
+"you lose your mind"
+you lose your mind 
+put a smile on your face 
+when i'm about to blackout  
+i wanna go another round  
+another shot of you is all it takes to drown 
+when i'm about to blackout  
+i wanna go another round  
+another shot of you
+
+"i wanna get going"
+i wanna get to going 
+let me tell you something 
+you ain't nothing 
+but a champagne promise 
+all the pain that i know
+and i bet you thought i wouldn't know 
+about what turns you on 
+what you like this is all
