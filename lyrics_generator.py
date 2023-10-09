@@ -63,49 +63,55 @@ def generator(sentence_list, next_word_list, batch_size):
 
 # Functions from keras-team/keras/blob/master/examples/lstm_text_generation.py
 def sample(preds, temperature=1.0):
-   # helper function to sample an index from a probability array
-   preds = np.asarray(preds).astype('float64')
-   preds = np.log(preds) / temperature
-   exp_preds = np.exp(preds)
-   preds = exp_preds / np.sum(exp_preds)
-   probas = np.random.multinomial(1, preds, 1)
-   return np.argmax(probas)
+    # helper function to sample an index from a probability array
+    preds = np.asarray(preds).astype('float64')
+    preds = np.log(preds) / temperature
+    exp_preds = np.exp(preds)
+    preds = exp_preds / np.sum(exp_preds)
+    probas = np.random.multinomial(1, preds, 1)
+    return np.argmax(probas)
+
 def on_epoch_end(epoch, logs):
-   # Function invoked at end of each epoch. Prints generated text.
-   examples_file.write('\n----- Generating text after Epoch: %d\n' % epoch)
-   # Randomly pick a seed sequence
-   seed_index = np.random.randint(len(X_train+X_test))
-   seed = (X_train+X_test)[seed_index]
+    # Function invoked at end of each epoch. Prints generated text.
+    examples_file.write('\n----- Generating text after Epoch: %d\n' % epoch)
+    # Randomly pick a seed sequence
+    seed_index = np.random.randint(len(X_train+X_test))
+    seed = (X_train+X_test)[seed_index] # get random sample from train + test
    
-   for diversity in [0.3, 0.4, 0.5, 0.6, 0.7]:
-       sentence = seed
-       examples_file.write('----- Diversity:' + str(diversity) + '\n')
-       examples_file.write('----- Generating with seed:\n"' + ' '.join(sentence) + '"\n')
-       examples_file.write(' '.join(sentence))
-       for i in range(50):
-           x_pred = np.zeros((1, MIN_SEQ))
-           for t, word in enumerate(sentence):
-               x_pred[0, t] = word_indices[word]
-           preds = model.predict(x_pred, verbose=0)[0]
-           next_index = sample(preds, diversity)
-           next_word = indices_word[next_index]
+    for diversity in [0.3, 0.4, 0.5, 0.6, 0.7]:
+        sentence = seed # initial sequence taken from train/test data
+        examples_file.write('----- Diversity:' + str(diversity) + '\n')
+        examples_file.write('----- Generating with seed:\n"' + ' '.join(sentence) + '"\n')
+        examples_file.write(' '.join(sentence))
+        for i in range(50): # generating 50 words atm TODO: make this an input.
+            x_pred = np.zeros((1, MIN_SEQ)) # initialize empty numpy vector for predicted sequence. 
+            # since newline character included in possible words, MIN_SEQ doesn't matter too much
+            #  in terms of final structure of generated song lyrics.
+            for t, word in enumerate(sentence):
+                x_pred[0, t] = word_indices[word] # set pred values equal to 
+                # initial sequence indices (from dictionary)
+            preds = model.predict(x_pred, verbose=0)[0] # get predictions for 
+            # given sequence in form of indices
+            next_index = sample(preds, diversity) # sample a single index 
+            # TODO: worth it to have a variable/random diversity? or potentially optimize?
+            next_word = indices_word[next_index] # get next word via index
  
-           sentence = sentence[1:]
-           sentence.append(next_word)
+            sentence = sentence[1:] # shift sentence over by one word
+            sentence.append(next_word) # append new word to sentence
  
-           examples_file.write(" "+next_word)
-       examples_file.write('\n')
-   examples_file.write('='*80 + '\n')
-   examples_file.flush()
+            examples_file.write(" "+next_word)
+        examples_file.write('\n')
+    examples_file.write('='*80 + '\n')
+    examples_file.flush()
 
 def get_model():
-   print('Build model...')
-   model = Sequential()
-   model.add(Embedding(input_dim=len(words), output_dim=1024))
-   model.add(Bidirectional(LSTM(128)))
-   model.add(Dense(len(words)))
-   model.add(Activation('softmax'))
-   return model
+    print('Build model...')
+    model = Sequential()
+    model.add(Embedding(input_dim=len(words), output_dim=1024))
+    model.add(Bidirectional(LSTM(128)))
+    model.add(Dense(len(words)))
+    model.add(Activation('softmax'))
+    return model
 
 BATCH_SIZE = 32
 model = get_model()
