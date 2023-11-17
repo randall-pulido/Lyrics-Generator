@@ -40,7 +40,7 @@ valid_seqs, end_tokens = sequences
 print('Valid sequences of size {}: {}'.format(MIN_SEQ, len(valid_seqs)))
 
 # Split data into train and test.
-X_train, X_test, y_train, y_test = train_test_split(sequences[0], end_tokens, test_size=0.02, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(sequences[0], end_tokens, test_size=0.02) # random_state=42
 
 def generator(sentence_list, next_word_list, batch_size):
     '''Data generator.
@@ -121,16 +121,39 @@ file_path = "./checkpoints/LSTM_LYRICS-epoch{epoch:03d}-words%d-sequence%d-minfr
            "loss{loss:.4f}-acc{accuracy:.4f}-val_loss{val_loss:.4f}-val_acc{val_accuracy:.4f}" % \
            (len(words), MIN_SEQ, MIN_FREQUENCY)
 checkpoint = ModelCheckpoint(file_path, monitor='val_accuracy', save_best_only=True)
-print_callback = LambdaCallback(on_epoch_end=on_epoch_end)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=20)
+print_callback = LambdaCallback(on_epoch_end=on_epoch_end) # generte lyrics at end of each epoch to save to file
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=20) # stop training after val_accuracy shows no impovement after 20 epochs of stagnation
 callbacks_list = [checkpoint, print_callback, early_stopping]
 examples_file = open('examples.txt', "w")
-model.fit(generator(X_train, y_train, BATCH_SIZE),
-                   steps_per_epoch=int(len(valid_seqs)/BATCH_SIZE) + 1,
-                   epochs=20,
-                   callbacks=callbacks_list,
-                   validation_data=generator(X_test, y_train, BATCH_SIZE),
+model.fit(generator(X_train, y_train, BATCH_SIZE), # gets x, y from genertor function
+                   steps_per_epoch=int(len(valid_seqs)/BATCH_SIZE) + 1, # goes through entire dataset each epoch
+                   epochs=20, # goes through entire dataset this many times
+                   callbacks=callbacks_list, # see callbacks above
+                   validation_data=generator(X_test, y_test, BATCH_SIZE),
                    validation_steps=int(len(y_train)/BATCH_SIZE) + 1)
+
+# After loading a saved model (which requires initializing a new model via create_model()),
+# can continue training by simply doing model.fit again with new data.
+# Note: .fit doesnt reset the model weights.
+
+def load_and_train(checkpoint_path: str, X_train, y_train):
+    '''Returns a model that is loaded from given path and trained on data.
+    
+    Args:
+        checkpoint_path: Path to the model's saved checkpoint.
+        X_train: X training data.
+        y_train: y training data.
+    
+    Returns:
+        A model initialized via `create_model()` and loaded from the given path 
+        and trained on the given data.
+    '''
+    model = create_model()
+    model.load_weights(checkpoint_path)
+    model.fit(X_train, y_train)
+
+    return model
+
 
 def predict():
 
