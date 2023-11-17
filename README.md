@@ -2,7 +2,7 @@
 
 ## Introduction and Motivation
 
-I developed this python project out of my love for listening to, writing, and playing music as well as my interest in further exploring NLP as it has become a very hot topic as of late. Modern technology has contributed to helping artists sharpen their craft and explore the full breadth of their creativity. ML techniques can certainly be utilized for these aims as well, and that was the main goal that I had in mind when I decided to start this project. Not only could I have fun reading computer-generated lyrics, but maybe I could incorporate them into a unique song and write guitar chords to accompany them.
+I developed this Python project due to my passion for music, including listening to, writing, and playing it. Additionally, I wanted to delve deeper into the field of Natural Language Processing (NLP), which has gained significant attention recently. The advancement of modern technology has greatly aided artists in honing their skills and exploring their creativity to the fullest extent. Machine Learning (ML) techniques can also be effectively employed for these purposes, which was the primary objective behind initiating this project. My intention was not only to enjoy reading computer-generated lyrics but also to potentially incorporate them into an original song and compose guitar chords to complement them.
 
 ------------------
 
