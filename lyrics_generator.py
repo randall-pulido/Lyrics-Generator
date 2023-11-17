@@ -1,5 +1,6 @@
 from sklearn.model_selection import train_test_split
 import numpy as np
+from typing import Optional
 from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
 from keras.models import Sequential
@@ -129,28 +130,36 @@ model.fit(generator(X_train, y_train, BATCH_SIZE), # gets x, y from genertor fun
                    steps_per_epoch=int(len(valid_seqs)/BATCH_SIZE) + 1, # goes through entire dataset each epoch
                    epochs=20, # goes through entire dataset this many times
                    callbacks=callbacks_list, # see callbacks above
-                   validation_data=generator(X_test, y_test, BATCH_SIZE),
+                   validation_data=generator(X_test, y_train, BATCH_SIZE),
                    validation_steps=int(len(y_train)/BATCH_SIZE) + 1)
 
 # After loading a saved model (which requires initializing a new model via create_model()),
 # can continue training by simply doing model.fit again with new data.
 # Note: .fit doesnt reset the model weights.
 
-def load_and_train(checkpoint_path: str, X_train, y_train):
-    '''Returns a model that is loaded from given path and trained on data.
+def train_model(X_train, y_train, checkpoint_path: Optional[str] = None):
+    '''Returns a model that is trained on data.
     
     Args:
-        checkpoint_path: Path to the model's saved checkpoint.
         X_train: X training data.
         y_train: y training data.
+        checkpoint_path: Optional. Path to the model's saved checkpoint.
     
     Returns:
-        A model initialized via `create_model()` and loaded from the given path 
-        and trained on the given data.
+        A model initialized via `create_model()`, loaded from the given path 
+        if a path is given, and trained on the given data.
     '''
     model = create_model()
-    model.load_weights(checkpoint_path)
-    model.fit(X_train, y_train)
+
+    if checkpoint_path is not None:
+        model.load_weights(checkpoint_path)
+
+    model.fit(generator(X_train, y_train, BATCH_SIZE), # gets x, y from genertor function
+                   steps_per_epoch=int(len(valid_seqs)/BATCH_SIZE) + 1, # goes through entire dataset each epoch
+                   epochs=20, # goes through entire dataset this many times
+                   callbacks=callbacks_list, # see callbacks above
+                   validation_data=generator(X_test, y_train, BATCH_SIZE),
+                   validation_steps=int(len(y_train)/BATCH_SIZE) + 1)
 
     return model
 
