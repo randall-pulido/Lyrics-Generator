@@ -86,7 +86,7 @@ def on_epoch_end(epoch, logs):
         for i in range(50): # generating 50 words atm TODO: make this an input.
             x_pred = np.zeros((1, MIN_SEQ)) # initialize empty numpy vector for predicted sequence. 
             # since newline character included in possible words, MIN_SEQ doesn't matter too much
-            #  in terms of final structure of generated song lyrics.
+            # in terms of final structure of generated song lyrics.
             for t, word in enumerate(sentence):
                 x_pred[0, t] = word_indices[word] # set pred values equal to 
                 # initial sequence indices (from dictionary)
@@ -104,18 +104,19 @@ def on_epoch_end(epoch, logs):
     examples_file.write('='*80 + '\n')
     examples_file.flush()
 
-def get_model():
+def create_model():
     print('Build model...')
     model = Sequential()
     model.add(Embedding(input_dim=len(words), output_dim=1024))
     model.add(Bidirectional(LSTM(128)))
     model.add(Dense(len(words)))
     model.add(Activation('softmax'))
+    model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
     return model
 
 BATCH_SIZE = 32
-model = get_model()
-model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
+model = create_model()
+model.summary()
 file_path = "./checkpoints/LSTM_LYRICS-epoch{epoch:03d}-words%d-sequence%d-minfreq%d-" \
            "loss{loss:.4f}-acc{accuracy:.4f}-val_loss{val_loss:.4f}-val_acc{val_accuracy:.4f}" % \
            (len(words), MIN_SEQ, MIN_FREQUENCY)
@@ -130,3 +131,7 @@ model.fit(generator(X_train, y_train, BATCH_SIZE),
                    callbacks=callbacks_list,
                    validation_data=generator(X_test, y_train, BATCH_SIZE),
                    validation_steps=int(len(y_train)/BATCH_SIZE) + 1)
+
+def predict():
+
+    pass
