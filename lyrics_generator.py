@@ -1,5 +1,6 @@
 from sklearn.model_selection import train_test_split
 import numpy as np
+from typing import Optional
 from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
 from keras.models import Sequential
@@ -41,7 +42,7 @@ valid_seqs, end_tokens = sequences
 print('Valid sequences of size {}: {}'.format(MIN_SEQ, len(valid_seqs)))
 
 # Split data into train and test.
-X_train, X_test, y_train, y_test = train_test_split(sequences[0], end_tokens, test_size=0.02, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(sequences[0], end_tokens, test_size=0.02) # random_state=42
 
 def generator(sentence_list, next_word_list, batch_size):
     '''Data generator.
@@ -87,7 +88,7 @@ def on_epoch_end(epoch, logs):
         for i in range(50): # generating 50 words atm TODO: make this an input.
             x_pred = np.zeros((1, MIN_SEQ)) # initialize empty numpy vector for predicted sequence. 
             # since newline character included in possible words, MIN_SEQ doesn't matter too much
-            #  in terms of final structure of generated song lyrics.
+            # in terms of final structure of generated song lyrics.
             for t, word in enumerate(sentence):
                 x_pred[0, t] = word_indices[word] # set pred values equal to 
                 # initial sequence indices (from dictionary)
@@ -109,13 +110,14 @@ def on_epoch_end(epoch, logs):
     examples_file.write('='*80 + '\n')
     examples_file.flush()
 
-def get_model():
+def create_model():
     print('Build model...')
     model = Sequential()
     model.add(Embedding(input_dim=len(words), output_dim=1024))
     model.add(Bidirectional(LSTM(128)))
     model.add(Dense(len(words)))
     model.add(Activation('softmax'))
+    model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
     model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
     return model
 
@@ -126,8 +128,8 @@ file_path = "./checkpoints/LSTM_LYRICS-epoch{epoch:03d}-words%d-sequence%d-minfr
     "loss{loss:.4f}-acc{accuracy:.4f}-val_loss{val_loss:.4f}-val_acc{val_accuracy:.4f}" % \
         (len(words), MIN_SEQ, MIN_FREQUENCY)
 checkpoint = ModelCheckpoint(file_path, monitor='val_accuracy', save_best_only=True)
-print_callback = LambdaCallback(on_epoch_end=on_epoch_end)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=20)
+print_callback = LambdaCallback(on_epoch_end=on_epoch_end) # generte lyrics at end of each epoch to save to file
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=20) # stop training after val_accuracy shows no impovement after 20 epochs of stagnation
 callbacks_list = [checkpoint, print_callback, early_stopping]
 examples_file = open('examples2.txt', "w")
 model.fit(generator(X_train, y_train, BATCH_SIZE),
