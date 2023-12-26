@@ -35,11 +35,11 @@ def get_artists_by_genre(filepath, genres=['country'],
         A pandas dataframe containing artists and genres.
     
     '''
-    df = pd.read_csv(filepath, usecols=[artist_col_name, genre_col_name], nrows=num_artists)
-    print(df)
+    df = pd.read_csv(filepath, usecols=[artist_col_name, genre_col_name], nrows=num_artists) # , skiprows=range(1,100)
     df.rename(columns={artist_col_name:'artist', genre_col_name:'genre'}, inplace=True)
     df['genre'] = df['genre'].str.lower()
     df = df.loc[df['genre'].isin(genres)]
+    print(df.size)
     return df
 
 

@@ -9,11 +9,12 @@ from keras.layers import Embedding
 from helpers import *
 from tensorflow.keras.callbacks import LambdaCallback, ModelCheckpoint, EarlyStopping
 from tensorflow.keras.layers import Dense, Dropout, Activation, LSTM, Bidirectional, Embedding
+from tensorflow.keras.models import load_model
 
 # Process data into dataframe.
 path1 = '/Users/randallpulido/Desktop/ML/lyrics_generator/artist_data/top_10000_artists/10000-MTV-Music-Artists-page-1.csv'
-artist_genre_df = get_artists_by_genre(path1, num_artists=2)
-lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), max_songs=1)
+artist_genre_df = get_artists_by_genre(path1, num_artists=3)
+lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), max_songs=2)
 merged = lyrics_df.merge(artist_genre_df, on='artist', how='left')
 
 # Tokenize lyric data.
@@ -92,8 +93,12 @@ def on_epoch_end(epoch, logs):
                 # initial sequence indices (from dictionary)
             preds = model.predict(x_pred, verbose=0)[0] # get predictions for 
             # given sequence in form of indices
+            print(preds)
+            print(len(preds))
             next_index = sample(preds, diversity) # sample a single index 
             # TODO: worth it to have a variable/random diversity? or potentially optimize?
+            print('This is next index: ', next_index)
+            print(indices_word)
             next_word = indices_word[next_index] # get next word via index
  
             sentence = sentence[1:] # shift sentence over by one word
@@ -111,22 +116,25 @@ def get_model():
     model.add(Bidirectional(LSTM(128)))
     model.add(Dense(len(words)))
     model.add(Activation('softmax'))
+    model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
     return model
 
 BATCH_SIZE = 32
 model = get_model()
-model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
+# model = load_model('lyrics_model_1to100')
 file_path = "./checkpoints/LSTM_LYRICS-epoch{epoch:03d}-words%d-sequence%d-minfreq%d-" \
-           "loss{loss:.4f}-acc{accuracy:.4f}-val_loss{val_loss:.4f}-val_acc{val_accuracy:.4f}" % \
-           (len(words), MIN_SEQ, MIN_FREQUENCY)
+    "loss{loss:.4f}-acc{accuracy:.4f}-val_loss{val_loss:.4f}-val_acc{val_accuracy:.4f}" % \
+        (len(words), MIN_SEQ, MIN_FREQUENCY)
 checkpoint = ModelCheckpoint(file_path, monitor='val_accuracy', save_best_only=True)
 print_callback = LambdaCallback(on_epoch_end=on_epoch_end)
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=20)
 callbacks_list = [checkpoint, print_callback, early_stopping]
-examples_file = open('examples.txt', "w")
+examples_file = open('examples2.txt', "w")
 model.fit(generator(X_train, y_train, BATCH_SIZE),
-                   steps_per_epoch=int(len(valid_seqs)/BATCH_SIZE) + 1,
-                   epochs=20,
-                   callbacks=callbacks_list,
-                   validation_data=generator(X_test, y_train, BATCH_SIZE),
-                   validation_steps=int(len(y_train)/BATCH_SIZE) + 1)
+          steps_per_epoch=int(len(valid_seqs)/BATCH_SIZE) + 1,
+          epochs=20,
+          callbacks=callbacks_list,
+          validation_data=generator(X_test, y_train, BATCH_SIZE),
+          validation_steps=int(len(y_train)/BATCH_SIZE) + 1)
+model.save('./country_lyrics_generator_1_to_20', save_format='tf')
+model.save_weights('./country_lyrics_generator_weights_1_to_20')

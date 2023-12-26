@@ -10,7 +10,7 @@ I developed this python project out of my love for listening to, writing, and pl
 
 ### Data Retrieval
 
-Artist data (such as artist name and genre) is retrieved from [MTV's Top 10,000 Music Artists](https://gist.github.com/mbejda/9912f7a366c62c1f296c#file-10000-mtv-music-artists-page-1-csv), filtered by genre, and fed to the [LyricsGenius](https://lyricsgenius.readthedocs.io/en/master/) which then pulls in lyrics data from a user-specified number of songs for each artist. Data retrieval and further preprocessing, such as cleaning and tokenizing the data (see below), is done in the `helpers.py` file.
+Artist data (such as artist name and genre) is retrieved from [MTV's Top 10,000 Music Artists](https://gist.github.com/mbejda/9912f7a366c62c1f296c#file-10000-mtv-music-artists-page-1-csv), filtered by genre, and fed to the [LyricsGenius API](https://lyricsgenius.readthedocs.io/en/master/) which then pulls in lyrics data from a user-specified number of songs for each artist. Data retrieval and further preprocessing, such as cleaning and tokenizing the data (see below), is done in the `helpers.py` file.
 
 ### Preprocessing
 
@@ -31,6 +31,8 @@ The project is still a work in progress. Some adjustments that need to be made i
 * Look into ways of making the generated song lyrics have a rhyme scheme.
 * Make README file more in-depth.
 * Creating a UI and API.
+* Something to consider: when training model initially, we do batch trainings. How is the common/uncommon word partition affecting the model performance? Is there a better way to do this?
+* Finalize the current training procedure into a retraining / coninue training procedure.
 
 ------------------
 
