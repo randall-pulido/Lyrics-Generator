@@ -12,10 +12,16 @@ from tensorflow.keras.callbacks import LambdaCallback, ModelCheckpoint, EarlySto
 from tensorflow.keras.layers import Dense, Dropout, Activation, LSTM, Bidirectional, Embedding
 from tensorflow.keras.models import load_model
 
+# PARAMS
+NUM_ARTIST = 3
+MAX_SONGS = 2
+MIN_FREQUENCY = 7
+MIN_SEQ = 5
+
 # Process data into dataframe.
 path1 = '/Users/randallpulido/Desktop/ML/lyrics_generator/artist_data/top_10000_artists/10000-MTV-Music-Artists-page-1.csv'
-artist_genre_df = get_artists_by_genre(path1, num_artists=3)
-lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), max_songs=2)
+artist_genre_df = get_artists_by_genre(path1, NUM_ARTIST=3)
+lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), MAX_SONGS=2)
 merged = lyrics_df.merge(artist_genre_df, on='artist', how='left')
 
 # Tokenize lyric data.
@@ -26,9 +32,10 @@ print('Total tokens: ', len(tokenized_lyrics))
 frequencies = get_frequencies(tokenized_lyrics)
 
 # Get set of words and uncommon words.
-MIN_FREQUENCY = 7
-uncommon_words = set([key for key in frequencies.keys() if frequencies[key] < MIN_FREQUENCY])
-words = sorted(set([key for key in frequencies.keys() if frequencies[key] >= MIN_FREQUENCY]))
+uncommon_words = set([key for key in frequencies.keys() if frequencies[key] < MIN_FREQUENCY]) # set
+words = sorted(set([key for key in frequencies.keys() if frequencies[key] >= MIN_FREQUENCY])) # list
+
+# Dictionaries of words and their indices in `words` list.
 num_words = len(words)
 word_indices = dict((w, i) for i, w in enumerate(words))
 indices_word = dict((i, w) for i, w in enumerate(words))
@@ -36,13 +43,11 @@ print('Words with less than {} appearances: {}'.format( MIN_FREQUENCY, len(uncom
 print('Words with more than {} appearances: {}'.format( MIN_FREQUENCY, len(words)))
 
 # Partition data into sequences of tokens and end tokens.
-MIN_SEQ = 5
-sequences = sequence_tokens(tokenized_lyrics, uncommon_words, seq_length=MIN_SEQ)
-valid_seqs, end_tokens = sequences
+valid_seqs, end_tokens = sequence_tokens(tokenized_lyrics, uncommon_words, seq_length=MIN_SEQ)
 print('Valid sequences of size {}: {}'.format(MIN_SEQ, len(valid_seqs)))
 
 # Split data into train and test.
-X_train, X_test, y_train, y_test = train_test_split(sequences[0], end_tokens, test_size=0.02) # random_state=42
+X_train, X_test, y_train, y_test = train_test_split(valid_seqs, end_tokens, test_size=0.02, random_state=42)
 
 def generator(sentence_list, next_word_list, batch_size):
     '''Data generator.
