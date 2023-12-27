@@ -118,7 +118,6 @@ def create_model():
     model.add(Dense(len(words)))
     model.add(Activation('softmax'))
     model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
-    model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
     return model
 
 BATCH_SIZE = 32

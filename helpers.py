@@ -162,9 +162,9 @@ def sequence_tokens(split_data, uncommon_tokens, seq_length=5):
     '''
     valid_seqs = []
     end_seq_words = []
-    for i in range(len(split_data) - seq_length ):
+    for i in range(len(split_data) - seq_length): 
         end_slice = i + seq_length + 1
-        if len( set(split_data[i:end_slice]).intersection(uncommon_tokens) ) == 0:
+        if len(set(split_data[i:end_slice]).intersection(uncommon_tokens)) == 0:
             valid_seqs.append(split_data[i: i + seq_length])
             end_seq_words.append(split_data[i + seq_length])
     return valid_seqs, end_seq_words
