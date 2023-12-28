@@ -12,6 +12,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.data import Dataset
+import json
 
 def data_prep(text, max_len):
     # Tokenize.
@@ -61,7 +62,7 @@ def generate_text(model, tokenizer, max_sequence_length, seed_text, num_words):
 
 
 # PARAMS
-NUM_ARTIST = 200 # Need to change this so that gets the actual number of artists of the genres. Currently just looks for `NUM_ARTIST` artists and 
+NUM_ARTIST = 100 # Need to change this so that gets the actual number of artists of the genres. Currently just looks for `NUM_ARTIST` artists and 
 # of those, gets the artist of the specific genre. That's why was getting error before.
 MAX_SONGS = 10
 
@@ -81,6 +82,12 @@ BATCH_SIZE = 32
 BUFFER_SIZE = 1000
 
 tokenizer, X, y, num_words = data_prep(text, MAX_SEQ)
+
+# Save tokenizer
+tokenizer_file_path = 'tokenizer.json'
+tokenizer_json = tokenizer.to_json()
+with open(tokenizer_file_path, 'w', encoding='utf-8') as f:
+    f.write(json.dumps(tokenizer_json, ensure_ascii=False))
 
 dataset = Dataset.from_tensor_slices((X, y))
 dataset = dataset.shuffle(buffer_size=1000).batch(BATCH_SIZE)
