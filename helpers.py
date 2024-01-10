@@ -6,7 +6,7 @@ import string
 
 GENIUS_ACCESS_TOKEN = 'Kt4TThKkWKXuV43ItLTV_po3fUB9WDIsz5pvWc-HMI-nATTGgLvL1i7ZXF1KD705'
 
-def get_artists_by_genre(filepath, genres=['country'], 
+def get_artists_by_genre(filepath, genres=['country'], start_row=0,
                          artist_col_name='name', genre_col_name='genre', num_artists=20):
     '''Searches for artists based on genre.
 
@@ -35,7 +35,7 @@ def get_artists_by_genre(filepath, genres=['country'],
         A pandas dataframe containing artists and genres.
     
     '''
-    df = pd.read_csv(filepath, usecols=[artist_col_name, genre_col_name], nrows=num_artists) # , skiprows=range(1,100)
+    df = pd.read_csv(filepath, usecols=[artist_col_name, genre_col_name], skiprows=range(1,start_row), nrows=num_artists) # , skiprows=range(1,100)
     df.rename(columns={artist_col_name:'artist', genre_col_name:'genre'}, inplace=True)
     df['genre'] = df['genre'].str.lower()
     df = df.loc[df['genre'].isin(genres)]
@@ -71,7 +71,9 @@ def get_lyrics(artists, max_songs=5):
             artist_array = np.append(artist_array, [artist] * len(songs))
             for song in songs:
                 song_array = np.append(song_array, song.title)
-                lyrics_array = np.append(lyrics_array, clean_lyrics(song.to_text()))
+                lyrics_array = np.append(lyrics_array, song.to_text()) 
+                # ^^^ removed clean_lyrics function from around song.to_text() 
+                # so that we can save raw lyrics. Use LLM to clean? 
     return pd.DataFrame(np.stack((artist_array, song_array, lyrics_array)).T, 
                        columns=['artist', 'song', 'lyrics'])
 

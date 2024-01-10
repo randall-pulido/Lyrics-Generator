@@ -1,3 +1,4 @@
+from sklearn.model_selection import train_test_split
 import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.models import Sequential
@@ -10,36 +11,51 @@ from tensorflow.keras.callbacks import LambdaCallback, ModelCheckpoint, EarlySto
 from tensorflow.keras.layers import Dense, Dropout, Activation, LSTM, Bidirectional, Embedding
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.sequence import pad_sequences, TimeseriesGenerator
 from tensorflow.data import Dataset
 import json
 
-def data_prep(text, max_len):
-    # Tokenize.
+def data_prep(songs, max_len):
+    # Split data into train, validation, and test.
+    train_songs, val_test = train_test_split(songs, test_size=0.2, random_state=42)
+    val_songs, test_songs = train_test_split(val_test, test_size=0.5, random_state=42)
+
+    # Tokenizer, fit to training set
     tokenizer = Tokenizer()
-    tokenizer.fit_on_texts(text)
-    total_words = len(tokenizer.word_index) + 1
-    print('Total tokens: ', total_words)  # Not all tokens. Only ones that have some number of minimum appearances.
+    tokenizer.fit_on_texts(train_songs)
+    total_tokens = len(tokenizer.word_index) + 1
+    print('Total tokens: ', total_tokens)  # Not all tokens. Only ones that have some number of minimum appearances.
+
+    # Turn into sequence of integers.
+    train_seqs = tokenizer.texts_to_sequences(train_songs)
+    val_seqs = tokenizer.texts_to_sequences(val_songs)
+    test_seqs = tokenizer.texts_to_sequences(test_songs)
+
+    print(len(train_seqs[0]))
 
     # Create input sequences and targets.
-    sequences = tokenizer.texts_to_sequences(text)
-    sequences = [item for lst in sequences for item in lst]
+    def create_song_sequences(vectorized_songs):
+        X = []
+        y = []
+        for song_vect in vectorized_songs:
+            generator = TimeseriesGenerator(song_vect, song_vect, 
+                                            length=max_len, batch_size=1)
+            X.append(np.array([sequence.flatten() for (sequence, _) in generator]))
+            y.append(np.array([target.flatten() for (_, target) in generator]))
 
-    X = []
-    y = []
-    for i in range(len(sequences) - max_len): 
-        end_slice = i + max_len + 1
-        X.append(sequences[i: i + max_len])
-        y.append(sequences[i + max_len])
+        return X, y
     
-    # Pad sequences for consistent input length
-    padded_X = pad_sequences(X, maxlen=max_len, padding='pre')
-    targets = np.array(y)
+    trn_data = create_song_sequences(train_seqs)
+    val_data = create_song_sequences(val_seqs)
+    tst_data = create_song_sequences(test_seqs)
 
-    return tokenizer, padded_X, targets, total_words
+    # Pad sequences for consistent input length. Do we have to do this now since they overlap?
+    # padded_X = pad_sequences(X, maxlen=max_len, padding='pre')
+
+    return tokenizer, trn_data, val_data, tst_data, total_tokens
 
 
-def create_model(num_words):
+def create_model(num_words): # fine tune this architecture
     print('Build model...')
     model = Sequential()
     model.add(Embedding(input_dim=num_words, output_dim=1024))
@@ -61,44 +77,34 @@ def generate_text(model, tokenizer, max_sequence_length, seed_text, num_words):
     return seed_text
 
 
-# PARAMS
-NUM_ARTIST = 100 # Need to change this so that gets the actual number of artists of the genres. Currently just looks for `NUM_ARTIST` artists and 
-# of those, gets the artist of the specific genre. That's why was getting error before.
-MAX_SONGS = 10
-
-# Process data into dataframe.
-path1 = '/Users/randallpulido/Desktop/ML/lyrics_generator/artist_data/top_10000_artists/10000-MTV-Music-Artists-page-1.csv'
-artist_genre_df = get_artists_by_genre(path1, num_artists=NUM_ARTIST)
-lyrics_df = get_lyrics(artist_genre_df['artist'].tolist(), max_songs=MAX_SONGS)
-merged = lyrics_df.merge(artist_genre_df, on='artist', how='left')
-
 # Get lyric data.
-text = split_lyric_data(merged['lyrics']) # can keep like this for now 
-# but should optimize in future i.e. not use split_lyric_data function
-# instead opt for combining `lyrics` entries of merged df.
+lyrics_df = pd.read_csv('country_artist_data/country_lyric_data.csv')
+lyrics_df['lyrics'] = lyrics_df['lyrics'].apply(clean_lyrics)
 
-MAX_SEQ = 5
+MAX_SEQ = 16 # optimize thissssss
 BATCH_SIZE = 32
 BUFFER_SIZE = 1000
+MODEL_PATH = './streamlined_models/country_model/'
 
-tokenizer, X, y, num_words = data_prep(text, MAX_SEQ)
+# prep data
+tokenizer, train, valid, test, num_words = data_prep(lyrics_df['lyrics'].to_numpy(), MAX_SEQ)
 
 # Save tokenizer
-tokenizer_file_path = 'tokenizer.json'
+tokenizer_file_path = MODEL_PATH + 'tokenizer.json'
 tokenizer_json = tokenizer.to_json()
 with open(tokenizer_file_path, 'w', encoding='utf-8') as f:
     f.write(json.dumps(tokenizer_json, ensure_ascii=False))
 
-dataset = Dataset.from_tensor_slices((X, y))
-dataset = dataset.shuffle(buffer_size=1000).batch(BATCH_SIZE)
+# dataset = Dataset.from_tensor_slices((X, y))
+# dataset = dataset.shuffle(buffer_size=1000).batch(BATCH_SIZE)
 
 model = create_model(num_words)
 
 # Train the model
-model.fit(X, y, epochs=20, verbose=2)
+model.fit(, y, epochs=20, verbose=2)
 
-model.save('./streamlined_models/lyrics_generator_1', save_format='tf')
+# model.save('./streamlined_models/lyrics_generator_1', save_format='tf')
 
-seed_text = 'For the love of'
-generated_text = generate_text(model, tokenizer, MAX_SEQ, seed_text, 50)
-print(generated_text)
+# seed_text = 'For the love of'
+# generated_text = generate_text(model, tokenizer, MAX_SEQ, seed_text, 50)
+# print(generated_text)
